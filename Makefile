@@ -1,6 +1,6 @@
 CXX     	:= g++
-CFLAGS  	:= -Wall -Wextra -pedantic-errors -fsanitize=address
-LDFLAGS 	:= -fsanitize=address
+CFLAGS  	:= -Wall -Wextra -pedantic-errors -fsanitize=address -fsanitize=undefined -g -D_GLIBCXX_DEBUG
+LDFLAGS 	:= -fsanitize=address -fsanitize=undefined
 SOURCES 	:= $(wildcard *.cpp)
 OBJECTS 	:= $(SOURCES:.cpp=.o)
 EXECUTABLE 	:= Little
