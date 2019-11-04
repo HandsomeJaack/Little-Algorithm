@@ -1,9 +1,6 @@
+#include "matrix.h"
 #include <algorithm>
 #include <iostream>
-#include <limits>
-#include <utility>
-#include <vector>
-#include "matrix.h"
 
 void Matrix::printMatrix() {
   for (const auto &v : M) {
@@ -80,9 +77,16 @@ std::pair<int, std::pair<int, int>> Matrix::detectRemovableEdge() {
     }
   }
 
-auto Matrix::begin() { return M.begin(); }
+  std::pair<int, std::pair<int, int>> maxFactor = *std::max_element(
+      factors.begin(), factors.end(),
+      [](const auto &a, const auto &b) { return a.first < b.first; });
+  // std::cout << maxFactor.first << "-";
+  return maxFactor;
+}
 
-auto Matrix::end() { return M.end(); }
+std::vector<std::vector<int>>::iterator Matrix::begin() { return M.begin(); }
+
+std::vector<std::vector<int>>::iterator Matrix::end() { return M.end(); }
 
 void Matrix::erase(std::vector<std::vector<int>>::iterator iter) {
   M.erase(iter);

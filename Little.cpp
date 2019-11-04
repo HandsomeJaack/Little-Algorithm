@@ -1,10 +1,7 @@
-#include <
-std::pair<int, std::pair<int, int>> maxFactor = *std::max_element(
-      factors.begin(), factors.end(),
-      [](const auto &a, const auto &b) { return a.first < b.first; });
-  // std::cout << maxFactor.first << "-";
-  return maxFactor;
-}
+#include <algorithm>
+#include <iostream>
+
+#include "matrix.h"
 
 std::pair<Matrix, Matrix> sepMatrix(Matrix M,
                                     std::pair<int, int> removableEdge) {
@@ -17,46 +14,37 @@ std::pair<Matrix, Matrix> sepMatrix(Matrix M,
   return {M1, M2};
 }
 
-
 class Solution {
  public:
   void findSolution(Matrix M);
   void compareMatrix(Matrix M1, Matrix M2);
- private:
-  std::pair<int, std::vector<int>> avliable_solution;
-  int record;
 };
 
 void Solution::findSolution(Matrix M) {
   M.changeZeros();
   M.printMatrix();
 
-  std::pair<int, std::vector<int>> solution;
-  int prevFactor = INF;
-  int lowestBorder = 0;
-  
-  Matrix M1, M2;
-  while (M.size() != 2) {
-    std::pair<int, std::pair<int, int>> maxFactor = M.detectRemovableEdge();
-    if (prevFactor < maxFactor.first) {
-      prevFactor = maxFactor.first;
-      lowestBorder += maxFactor.first;
+  std::pair<int, std::pair<int,int>> removableEdge = M.detectRemovableEdge();
+  std::pair<Matrix, Matrix> M12 = sepMatrix(M, removableEdge.second);
+  std::vector<std::pair<int, int>> path;
+
+  while(M12.first.size() != 2 || M12.second.size() != 2){
+    std::pair<int, std::pair<int,int>> removableEdgeM1 = M12.first.detectRemovableEdge();
+    std::pair<int, std::pair<int,int>> removableEdgeM2 = M12.second.detectRemovableEdge();
+
+    if(removableEdgeM1.first < removableEdgeM2.first) {
+      M12 = sepMatrix(M12.first, removableEdgeM1.second);
+      path.push_back(removableEdgeM1.second);
+    } else {
+      M12 = sepMatrix(M12.second, removableEdgeM2.second);
+      path.push_back(removableEdgeM2.second);
     }
-
-    std::pair<Matrix, Matrix> M12 = sepMatrix(M, maxFactor.second);
-    M1 = M12.first;
-    M2 = M12.second;
-
-    lowestBorder += M1.substractMatrix();
-    M = M1;
   }
 
-  solution = {lowestBorder, path};
-  std::cout << "Shortest path: " << lowestBorder << std::endl << "Full path :";
-  for (const auto &i : path) {
-    std::cout << i << "->";
+  for(const auto& i: path) {
+    std::cout << i.first << "->" << i.second <<",";
   }
-  std::cout << std::endl;
+
 }
 
 int main() {

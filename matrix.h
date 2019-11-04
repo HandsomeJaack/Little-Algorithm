@@ -1,6 +1,10 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#include <limits>
+#include <utility>
+#include <vector>
+
 #define INF std::numeric_limits<int>::max()
 
 class Matrix {
@@ -13,8 +17,8 @@ class Matrix {
   std::pair<int, std::pair<int, int>> detectRemovableEdge();
 
   void erase(std::vector<std::vector<int>>::iterator iter);
-  auto begin();
-  auto end();
+  std::vector<std::vector<int>>::iterator begin();
+  std::vector<std::vector<int>>::iterator end();
   int &at(int i, int j);
   int size();
 
@@ -25,5 +29,4 @@ class Matrix {
   std::vector<std::vector<int>> M;
 };
 
-#endif
 #endif
