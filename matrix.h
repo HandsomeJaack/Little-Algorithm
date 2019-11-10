@@ -22,6 +22,7 @@ class Matrix {
   int &at(int i, int j);
   int size();
 
+  int findBottom();
   int findMinInString(int stringNumber, int excludeNUmber = -1);
   int findMinInColunmn(int columnNumber, int excludeNumber = -1);
 

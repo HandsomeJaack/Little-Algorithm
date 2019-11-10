@@ -1,16 +1,19 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
+#include <functional>
 
 #include "matrix.h"
+
+std::vector<int> rows;
+std::vector<int> columns;
+std::vector<std::pair<int, int>> path;
 
 struct Node {
   Matrix M;
   std::unique_ptr<Node> left, right;
-  std::vector<std::pair<int, int>> path;
   int bypass;
-  std::vector<int> rows;
-  std::vector<int> columns;
+  
   Node(Matrix M) : M(M) {}
 };
 
@@ -25,78 +28,79 @@ std::pair<Matrix, Matrix> sepMatrix(Matrix M,
   return {M1, M2};
 }
 
-void bypass(std::pair<Matrix, Matrix> M12, Node& node) {
-  if (M12.first.size() == 2 || M12.second.size() == 2) return;
+void forEachTreeElem(Node& node, std::function<void(Node &)> func) {
+    if(node.left)   forEachTreeElem(*node.left, func);
+    if(node.right)   forEachTreeElem(*node.right, func);
 
-  int bottomM1 = M12.first.substractMatrix();
-  int bottomM2 = M12.second.substractMatrix();
+    func(node);
+}
 
-  std::cout << bottomM1 << ";" << bottomM2 << std::endl;
-  node.left = std::make_unique<Node>(M12.first);
-  node.right = std::make_unique<Node>(M12.second);
+Node& findMin(Node& root) { 
+  int currBottom = std::numeric_limits<int>::max();
+  Node *minNode = 0;
+  forEachTreeElem(root, [&](Node &node)
+    {
+        if (node.left) // Есть дочерние узлы, пропускаем этот узел.
+            return;
+        int val = node.M.findBottom();
+        if (val < currBottom)
+        {
+            currBottom = val;
+            minNode = &node;
+            node.bypass = val;
+        }
+    });
+    return *minNode;
+}
 
-  if (bottomM1 < bottomM2) {
-    node.bypass += bottomM1;
-    std::pair<int, std::pair<int, int>> removableEdgeM1 =
-        M12.first.detectRemovableEdge();
-    M12 = sepMatrix(M12.first, removableEdgeM1.second);
+void bypass(Node& root) {
 
-    int realRow = node.rows.at(removableEdgeM1.second.first);
-    int realColumn = node.columns.at(removableEdgeM1.second.second);
+  std::pair<int, std::pair<int, int>> removableEdge;
+  std::pair<Matrix, Matrix> M12;
+  Node* newNode = &root;
+ 
+  while(newNode->M.size() != 2) {
+    newNode = &findMin(root);
+    newNode->M.substractMatrix();
+    
+    removableEdge = newNode->M.detectRemovableEdge();
+    M12 = sepMatrix(newNode->M, removableEdge.second);
 
-    node.path.push_back(std::make_pair(realRow + 1, realColumn + 1));
-
-    node.rows.erase(std::find(node.rows.begin(), node.rows.end(), realRow));
-    node.columns.erase(
-        std::find(node.columns.begin(), node.columns.end(), realColumn));
-
-    bypass(M12, *node.left);
-  } else {
-    node.bypass += bottomM2;
-    std::pair<int, std::pair<int, int>> removableEdgeM2 =
-        M12.second.detectRemovableEdge();
-    M12 = sepMatrix(M12.second, removableEdgeM2.second);
-
-    int realRow = node.rows.at(removableEdgeM2.second.first);
-    int realColumn = node.columns.at(removableEdgeM2.second.second);
-
-    node.path.push_back(std::make_pair(realRow + 1, realColumn + 1));
-
-    node.rows.erase(std::find(node.rows.begin(), node.rows.end(), realRow));
-    node.columns.erase(
-        std::find(node.columns.begin(), node.columns.end(), realRow));
-
-    bypass(M12, *node.right);
+    newNode->left = std::make_unique<Node>(M12.first);
+    newNode->right = std::make_unique<Node>(M12.second);
+    
+    int realRow = rows.at(removableEdge.second.first);
+    int realColumn = columns.at(removableEdge.second.second);
+    
+    path.push_back(std::make_pair(realRow + 1, realColumn + 1));
+    
+    rows.erase(std::find(rows.begin(), rows.end(), realRow));
+    columns.erase(
+        std::find(columns.begin(), columns.end(), realColumn));
+    
   }
 }
 
 void findSolution(Matrix& M) {
-  Node Tree(M);
   M.changeZeros();
-  Tree.bypass = M.substractMatrix();
+  Node Tree(M);
 
   for (int i = 0; i < M.size(); ++i) {
-    Tree.rows.push_back(i);
-    Tree.columns.push_back(i);
+    rows.push_back(i);
+    columns.push_back(i);
   }
 
-  std::pair<int, std::pair<int, int>> removableEdge = M.detectRemovableEdge();
-  Tree.path.push_back(removableEdge.second);
-  std::pair<Matrix, Matrix> M12 = sepMatrix(M, removableEdge.second);
+  bypass(Tree);
 
-  Tree.rows.erase(std::find(Tree.rows.begin(), Tree.rows.end(),
-                            removableEdge.second.first));
-  Tree.columns.erase(std::find(Tree.columns.begin(), Tree.columns.end(),
-                               removableEdge.second.second));
-  bypass(M12, Tree);
-
-  for (const auto& i : Tree.path) {
-    if (&i != &Tree.path.back()) {
-      std::cout << i.first << "->" << i.second << ",";
-    } else {
-      std::cout << i.first << "->" << i.second << std::endl;
+  for (int i = 1; i < path.size() + 1; ++i) {
+    if(i == path.size()) {
+      std::cout << "(" << path[i-1].first << "," << path[i-1].second << ")" << std::endl;
+      break;
     }
+    std::cout << "(" << path[i-1].first << "," << path[i-1].second <<"), ("
+              << path[i-1].second << "," << path[i].first << "), ";
   }
+  std::cout << Tree.bypass << std::endl;
 }
 
 int main() {

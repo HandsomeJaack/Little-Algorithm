@@ -42,6 +42,22 @@ int Matrix::findMinInString(int stringNumber, int excludeNumber) {
   return min;
 }
 
+int Matrix::findBottom() {
+  int lowestBorder = 0;
+  for (size_t i = 0; i < M[0].size(); ++i) {
+    Matrix M1 = M;
+    int minString = M1.findMinInString(i);
+    lowestBorder += minString;
+  }
+
+  for (size_t i = 0; i < M[0].size(); ++i) {
+    Matrix M1 = M;
+    int minColumn = M1.findMinInColunmn(i);
+    lowestBorder += minColumn;
+  }
+  return lowestBorder;
+}
+
 int Matrix::substractMatrix() {
   int lowestBorder = 0;
   for (size_t i = 0; i < M[0].size(); ++i) {

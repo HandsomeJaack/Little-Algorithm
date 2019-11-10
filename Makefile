@@ -11,7 +11,7 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CXX) $(LDFLAGS) $^ -o $@
 
 %.o: %.cpp
-	$(CXX) -c -MMD -MP $(CFLAGS) $^ -o $@
+	$(CXX) -c -MMD -MP $(CFLAGS) $< -o $@
 
 .PHONY: clean
 clean:
